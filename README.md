@@ -43,5 +43,5 @@ const totalCartPrice = appExampleExchangeCalculator(selectedCart)
 
 ## Example
 
-[exchange-currency-calculator-test]([https://github](https://github.com/fyzlog/exchange-currency-calculator-test))
+[exchange-currency-calculator-test](https://github.com/fyzlog/exchange-currency-calculator-test)
 
