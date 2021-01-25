@@ -8,6 +8,18 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+var compose = function compose() {
+  for (var _len = arguments.length, fns = new Array(_len), _key = 0; _key < _len; _key++) {
+    fns[_key] = arguments[_key];
+  }
+
+  return function (x) {
+    return fns.reduceRight(function (acc, fn) {
+      return fn(acc);
+    }, x);
+  };
+};
+
 var debug = function debug(data) {
   return console.debug(data), data;
 };
@@ -96,6 +108,8 @@ var filterExchangeRates = function filterExchangeRates(exchangeRatesFilter) {
   };
 };
 
+var filterExchangeRatesComposition = compose(filterExchangeRates, filterByCodes, codesFromConfig);
+
 var checkExchangeRates = function checkExchangeRates(exchangeRates) {
   return Object.keys(exchangeRates).length ? exchangeRates : Promise.reject('Exchange rates not found. Bad or empty exchange config.');
 };
@@ -112,7 +126,8 @@ var shoppingCartTotalExchangePrice = function shoppingCartTotalExchangePrice(exc
   return function (exchangePrice) {
     return function (exchangeRates) {
       return exchangeConfig.reduce(function (result, configItem) {
-        return result[configItem.currencyField] = numberToPrice(exchangePrice(exchangeRates[configItem.currencyCode])), result;
+        result[configItem.currencyField] = numberToPrice(exchangePrice(exchangeRates[configItem.currencyCode]));
+        return result;
       }, {});
     };
   };
@@ -129,7 +144,7 @@ var exchangeCalculator = function exchangeCalculator(apiConfig) {
         return Promise.reject('Exchange config is not defined');
       }
 
-      return getExchangeRates(apiConfig).then(toJSON).then(checkResults).then(filterExchangeRates(filterByCodes(codesFromConfig(exchangeConfig)))).then(checkExchangeRates).then(shoppingCartTotalExchangePrice(exchangeConfig)(calcExchangePrice(shoppingCartTotalPrice(shoppingCart))));
+      return getExchangeRates(apiConfig).then(toJSON).then(checkResults).then(filterExchangeRatesComposition(exchangeConfig)).then(checkExchangeRates).then(shoppingCartTotalExchangePrice(exchangeConfig)(calcExchangePrice(shoppingCartTotalPrice(shoppingCart))));
     };
   };
 };
